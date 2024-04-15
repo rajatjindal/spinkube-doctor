@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	min1dot6Check, _ = semver.NewConstraint("~1.6.8-0")
-	min1dot7Check, _ = semver.NewConstraint("~1.7.6-0")
+	min1dot6Check, _ = semver.NewConstraint("~1.6.26-0")
+	min1dot7Check, _ = semver.NewConstraint("~1.7.7-0")
 )
 
 var minVersionsCheck = []*semver.Constraints{
