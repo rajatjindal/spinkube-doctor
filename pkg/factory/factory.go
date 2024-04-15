@@ -1,0 +1,52 @@
+package factory
+
+import (
+	"os"
+
+	spinv1alpha1 "github.com/spinkube/spin-operator/api/v1alpha1"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	cmdutil "k8s.io/kubectl/pkg/cmd/util"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+var configFlags = genericclioptions.NewConfigFlags(true)
+
+func NewCommandFactory() (cmdutil.Factory, genericclioptions.IOStreams) {
+	matchVersionKubeConfigFlags := cmdutil.NewMatchVersionFlags(configFlags)
+	return cmdutil.NewFactory(matchVersionKubeConfigFlags),
+		genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr}
+}
+
+func GetRuntimeClient() (client.Client, error) {
+	var scheme = runtime.NewScheme()
+	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(spinv1alpha1.AddToScheme(scheme))
+
+	config, err := configFlags.ToRESTConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return client.New(config, client.Options{
+		Scheme: scheme,
+	})
+}
+
+func GetKubernetesClientset() (kubernetes.Interface, error) {
+	config, err := configFlags.ToRESTConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return kubernetes.NewForConfig(config)
+}
+
+func GetDynamicClient() (dynamic.Interface, error) {
+	matchVersionKubeConfigFlags := cmdutil.NewMatchVersionFlags(configFlags)
+	return cmdutil.NewFactory(matchVersionKubeConfigFlags).DynamicClient()
+}
