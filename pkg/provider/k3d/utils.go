@@ -1,27 +1,41 @@
 package k3d
 
 import (
-	"context"
-
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic"
+	semver "github.com/Masterminds/semver/v3"
 )
 
-func isCrdInstalled(ctx context.Context, dc dynamic.Interface, name string) (bool, error) {
-	_, err := dc.Resource(schema.GroupVersionResource{
-		Group:    "apiextensions.k8s.io",
-		Version:  "v1",
-		Resource: "customresourcedefinitions",
-	}).Get(ctx, name, metav1.GetOptions{})
+func compareVersions(version string, expectedSemVer []string) (bool, error) {
+	actualVersion, err := semver.NewVersion(version)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			return false, nil
-		}
-
 		return false, err
 	}
 
-	return true, nil
+	for _, ver := range expectedSemVer {
+		vcheck, err := semver.NewConstraint(ver)
+		if err != nil {
+			return false, err
+		}
+
+		k, errlist := vcheck.Validate(actualVersion)
+		if len(errlist) > 0 {
+			continue
+		}
+
+		return k, nil
+	}
+
+	return false, nil
 }
+
+// func getFileFromNode(_ context.Context, node v1.Node) error {
+// 	cmd := exec.Command("kubectl", "debug", fmt.Sprintf("node/%s", node.Name), "-it", "--image", "ubuntu", "--", "cat", "/host/var/lib/rancher/k3s/agent/etc/containerd/config.toml")
+// 	output, err := cmd.CombinedOutput()
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	fmt.Println("output from config.toml", string(output))
+// 	// file -> /host/var/lib/rancher/k3s/agent/etc/containerd/config.toml
+
+// 	return nil
+// }

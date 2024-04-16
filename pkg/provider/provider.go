@@ -8,14 +8,10 @@ import (
 )
 
 type Status struct {
-	Name             string
-	Ok               bool
-	Msg              string
-	Installed        bool
-	VersionOK        bool
-	CurrentVersion   string
-	AvailableVersion string
-	HowToFix         string
+	Name     string
+	Ok       bool
+	Msg      string
+	HowToFix string
 }
 
 type Provider interface {
@@ -24,6 +20,7 @@ type Provider interface {
 }
 
 func PrintStatus(s Status) {
+	fmt.Println()
 	if s.Ok {
 		fmt.Printf("%s %s\n", icons.IconWhiteCheckmark, s.Name)
 	} else {

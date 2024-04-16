@@ -33,11 +33,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	var exitError = false
 	for _, status := range statusList {
+		if !status.Ok {
+			exitError = true
+		}
+
 		provider.PrintStatus(status)
 	}
 
 	fmt.Println()
-	fmt.Println("Please fix above issues.")
-	os.Exit(1)
+
+	if exitError {
+		fmt.Println("Please fix above issues.")
+		os.Exit(1)
+	}
 }

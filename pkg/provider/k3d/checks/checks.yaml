@@ -1,0 +1,27 @@
+---
+- name: Containerd version is supported
+  checkType: containerd-version-on-nodes
+  semver: 
+    - "~1.6.26-0"
+    - "~1.7.7-0"
+
+- name: Spin App CRD is installed
+  checkType: crd
+  resourceName: spinapps.core.spinoperator.dev
+
+- name: Spin App Executor CRD is installed
+  checkType: crd
+  resourceName: spinappexecutors.core.spinoperator.dev
+
+- name: Cert Manager CRD is installed
+  checkType: crd
+  resourceName: certificates.cert-manager.io
+
+- name: Runtime Class is installed
+  checkType: runtimeclass
+  resourceName: wasmtime-spin-v2
+
+# - name: Containerd is configured to run Spin
+#   checkType: binary-installed-on-nodes
+#   resourceName: containerd-shim-spin-v2
+
