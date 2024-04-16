@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/rajatjindal/spinkube/pkg/provider"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -69,6 +70,38 @@ var runtimeClassCheck = func(ctx context.Context, k *k3d, check Check) (provider
 	return provider.Status{
 		Name: check.Name,
 		Ok:   true,
+	}, nil
+}
+
+var deploymentRunningCheck = func(ctx context.Context, k *k3d, check Check) (provider.Status, error) {
+	resp, err := k.k8sclient.AppsV1().Deployments(v1.NamespaceAll).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return provider.Status{
+				Name: check.Name,
+				Ok:   false,
+			}, nil
+		}
+
+		return provider.Status{
+			Name: check.Name,
+			Ok:   false,
+		}, err
+	}
+
+	//TODO: handle pagination
+	for _, item := range resp.Items {
+		if item.Name == check.ResourceName {
+			return provider.Status{
+				Name: check.Name,
+				Ok:   true,
+			}, nil
+		}
+	}
+
+	return provider.Status{
+		Name: check.Name,
+		Ok:   false,
 	}, nil
 }
 

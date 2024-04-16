@@ -17,9 +17,17 @@
   checkType: crd
   resourceName: certificates.cert-manager.io
 
+- name: Cert Manager is running
+  checkType: deployment-running
+  resourceName: "cert-manager"
+
 - name: Runtime Class is installed
   checkType: runtimeclass
   resourceName: wasmtime-spin-v2
+
+- name: Spin Operator is running
+  checkType: deployment-running
+  resourceName: "spin-operator"
 
 # - name: Containerd is configured to run Spin
 #   checkType: binary-installed-on-nodes

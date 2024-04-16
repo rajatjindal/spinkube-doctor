@@ -14,6 +14,7 @@ var checksMap = map[string]CheckFn{
 	"crd":                         isCrdInstalled,
 	"containerd-version-on-nodes": containerdVersionCheck,
 	"runtimeclass":                runtimeClassCheck,
+	"deployment-running":          deploymentRunningCheck,
 }
 
 type k3d struct {
