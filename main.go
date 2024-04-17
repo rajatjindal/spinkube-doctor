@@ -48,4 +48,6 @@ func main() {
 		fmt.Println("Please fix above issues.")
 		os.Exit(1)
 	}
+
+	fmt.Println("All looks good")
 }

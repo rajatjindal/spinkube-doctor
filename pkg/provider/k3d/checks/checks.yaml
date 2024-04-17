@@ -27,7 +27,10 @@
 
 - name: Spin Operator is running
   checkType: deployment-running
-  resourceName: "spin-operator"
+  resourceName: "spin-operator-controller-manager"
+  imageName: spin-operator
+  semver:
+    - ">=0.1.0"
 
 # - name: Containerd is configured to run Spin
 #   checkType: binary-installed-on-nodes

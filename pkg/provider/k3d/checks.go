@@ -21,6 +21,7 @@ type Check struct {
 	Type         string   `yaml:"checkType"`
 	ResourceName string   `yaml:"resourceName"`
 	SemVer       []string `yaml:"semver"`
+	ImageName    string   `yaml:"imageName"`
 }
 
 type CheckFn func(ctx context.Context, k *k3d, check Check) (provider.Status, error)
@@ -92,6 +93,26 @@ var deploymentRunningCheck = func(ctx context.Context, k *k3d, check Check) (pro
 	//TODO: handle pagination
 	for _, item := range resp.Items {
 		if item.Name == check.ResourceName {
+			if len(check.SemVer) > 0 {
+				imageTag := getImageTag(item, check)
+				ok, err := compareVersions(imageTag, check.SemVer)
+				if err != nil {
+					return provider.Status{
+						Name: check.Name,
+						Ok:   false,
+						Msg:  fmt.Sprintf("deployment running, but failed to do version check: %v", err),
+					}, nil
+				}
+
+				if !ok {
+					return provider.Status{
+						Name: check.Name,
+						Ok:   false,
+						Msg:  fmt.Sprintf("deployment running, but version check failed: %v", err),
+					}, nil
+				}
+			}
+
 			return provider.Status{
 				Name: check.Name,
 				Ok:   true,

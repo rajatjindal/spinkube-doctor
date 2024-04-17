@@ -1,7 +1,11 @@
 package k3d
 
 import (
+	"strings"
+
 	semver "github.com/Masterminds/semver/v3"
+	dockerparser "github.com/novln/docker-parser"
+	v1 "k8s.io/api/apps/v1"
 )
 
 func compareVersions(version string, expectedSemVer []string) (bool, error) {
@@ -16,12 +20,14 @@ func compareVersions(version string, expectedSemVer []string) (bool, error) {
 			return false, err
 		}
 
-		k, errlist := vcheck.Validate(actualVersion)
+		ok, errlist := vcheck.Validate(actualVersion)
 		if len(errlist) > 0 {
 			continue
 		}
 
-		return k, nil
+		if ok {
+			return ok, nil
+		}
 	}
 
 	return false, nil
@@ -39,3 +45,34 @@ func compareVersions(version string, expectedSemVer []string) (bool, error) {
 
 // 	return nil
 // }
+
+func getImageTag(deployment v1.Deployment, check Check) string {
+	for _, container := range deployment.Spec.Template.Spec.Containers {
+		nameFromImgRef, tag, err := getNameFromImageReference(container.Image)
+		if err != nil {
+			continue
+		}
+
+		if nameFromImgRef != check.ImageName {
+			continue
+		}
+
+		return tag
+	}
+
+	return ""
+}
+
+func getNameFromImageReference(imageRef string) (string, string, error) {
+	ref, err := dockerparser.Parse(imageRef)
+	if err != nil {
+		return "", "", err
+	}
+
+	if strings.Contains(ref.ShortName(), "/") {
+		parts := strings.Split(ref.ShortName(), "/")
+		return parts[len(parts)-1], ref.Tag(), nil
+	}
+
+	return ref.ShortName(), ref.Tag(), nil
+}

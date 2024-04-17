@@ -4,6 +4,7 @@ go 1.22.0
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/novln/docker-parser v1.0.0
 	github.com/spinkube/spin-operator v0.1.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.29.3
