@@ -25,5 +25,11 @@ func PrintStatus(s Status) {
 		fmt.Printf("%s %s\n", icons.IconWhiteCheckmark, s.Name)
 	} else {
 		fmt.Printf("%s %s\n%s\n", icons.IconRedCross, s.Name, s.Msg)
+		if s.HowToFix != "" {
+			fmt.Println()
+			fmt.Println("### how to fix ###")
+			fmt.Println()
+			fmt.Println(s.HowToFix)
+		}
 	}
 }

@@ -22,6 +22,7 @@ type Check struct {
 	ResourceName string   `yaml:"resourceName"`
 	SemVer       []string `yaml:"semver"`
 	ImageName    string   `yaml:"imageName"`
+	HowToFix     string   `yaml:"howToFix"`
 }
 
 type CheckFn func(ctx context.Context, k *k3d, check Check) (provider.Status, error)
@@ -35,14 +36,16 @@ var isCrdInstalled = func(ctx context.Context, k *k3d, check Check) (provider.St
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return provider.Status{
-				Name: check.Name,
-				Ok:   false,
+				Name:     check.Name,
+				Ok:       false,
+				HowToFix: check.HowToFix,
 			}, nil
 		}
 
 		return provider.Status{
-			Name: check.Name,
-			Ok:   false,
+			Name:     check.Name,
+			Ok:       false,
+			HowToFix: check.HowToFix,
 		}, err
 	}
 
@@ -79,14 +82,16 @@ var deploymentRunningCheck = func(ctx context.Context, k *k3d, check Check) (pro
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return provider.Status{
-				Name: check.Name,
-				Ok:   false,
+				Name:     check.Name,
+				Ok:       false,
+				HowToFix: check.HowToFix,
 			}, nil
 		}
 
 		return provider.Status{
-			Name: check.Name,
-			Ok:   false,
+			Name:     check.Name,
+			Ok:       false,
+			HowToFix: check.HowToFix,
 		}, err
 	}
 
@@ -98,17 +103,19 @@ var deploymentRunningCheck = func(ctx context.Context, k *k3d, check Check) (pro
 				ok, err := compareVersions(imageTag, check.SemVer)
 				if err != nil {
 					return provider.Status{
-						Name: check.Name,
-						Ok:   false,
-						Msg:  fmt.Sprintf("deployment running, but failed to do version check: %v", err),
+						Name:     check.Name,
+						Ok:       false,
+						Msg:      fmt.Sprintf("deployment running, but failed to do version check: %v", err),
+						HowToFix: check.HowToFix,
 					}, nil
 				}
 
 				if !ok {
 					return provider.Status{
-						Name: check.Name,
-						Ok:   false,
-						Msg:  fmt.Sprintf("deployment running, but version check failed: %v", err),
+						Name:     check.Name,
+						Ok:       false,
+						Msg:      fmt.Sprintf("deployment running, but version check failed: %v", err),
+						HowToFix: check.HowToFix,
 					}, nil
 				}
 			}
@@ -121,8 +128,9 @@ var deploymentRunningCheck = func(ctx context.Context, k *k3d, check Check) (pro
 	}
 
 	return provider.Status{
-		Name: check.Name,
-		Ok:   false,
+		Name:     check.Name,
+		Ok:       false,
+		HowToFix: check.HowToFix,
 	}, nil
 }
 
@@ -152,8 +160,9 @@ var containerdVersionCheck = func(ctx context.Context, k *k3d, check Check) (pro
 	}
 
 	return provider.Status{
-		Name: check.Name,
-		Ok:   vok,
-		Msg:  strings.Join(msgs, "\n"),
+		Name:     check.Name,
+		Ok:       vok,
+		Msg:      strings.Join(msgs, "\n"),
+		HowToFix: check.HowToFix,
 	}, nil
 }

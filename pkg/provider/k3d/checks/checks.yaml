@@ -4,26 +4,64 @@
   semver: 
     - "~1.6.26-0"
     - "~1.7.7-0"
+  howToFix: |
+    Use a Kubernetes version/provider that comes with the supported version of containerd.
+    e.g. for local setup, you can use k3d provided image and run a cluster as follows:
+
+    k3d cluster create wasm-cluster --image ghcr.io/spinkube/containerd-shim-spin/k3d:v0.13.1  --api-port 6551 -p '8082:80@loadbalancer' --agents 2
 
 - name: Spin App CRD is installed
   checkType: crd
   resourceName: spinapps.core.spinoperator.dev
+  howToFix: |
+    To use SpinKube, you need to install SpinApp CRD. It can be installed using following command:
+
+    kubectl apply -f https://github.com/spinkube/spin-operator/releases/download/v0.1.0/spin-operator.crds.yaml
 
 - name: Spin App Executor CRD is installed
   checkType: crd
   resourceName: spinappexecutors.core.spinoperator.dev
+  howToFix: |
+    To use SpinKube, you need to install SpinApp CRD. It can be installed using following command:
+
+    kubectl apply -f https://github.com/spinkube/spin-operator/releases/download/v0.1.0/spin-operator.crds.yaml
 
 - name: Cert Manager CRD is installed
   checkType: crd
   resourceName: certificates.cert-manager.io
+  howToFix: |
+    To use SpinKube, you need to install Cert Manager. This is used for issuing certificates required by Spin Operator Webhooks.
+    Cert Manager CRD's can be installed using following command:
+
+    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.3/cert-manager.crds.yaml
 
 - name: Cert Manager is running
   checkType: deployment-running
   resourceName: "cert-manager"
+  howToFix: |
+    To use SpinKube, you need to install Cert Manager. This is used for issuing certificates required by Spin Operator Webhooks.
+    Cert Manager can be installed using following command:
+
+    # Add and update Jetstack repository
+    helm repo add jetstack https://charts.jetstack.io
+    helm repo update
+
+    # Install the cert-manager Helm chart
+    helm install \
+      cert-manager jetstack/cert-manager \
+      --namespace cert-manager \
+      --create-namespace \
+      --version v1.14.3
 
 - name: Runtime Class is installed
   checkType: runtimeclass
   resourceName: wasmtime-spin-v2
+  howToFix: |
+    To use SpinKube, you need to install RuntimeClass. This helps scheduler to identify which nodes support running Spin Apps.
+
+    Note: If you are deploying to a production cluster that only has a shim on a subset of nodes, you’ll need to modify the RuntimeClass with a nodeSelector.
+
+    kubectl apply -f https://github.com/spinkube/spin-operator/releases/download/v0.1.0/spin-operator.runtime-class.yaml
 
 - name: Spin Operator is running
   checkType: deployment-running
@@ -31,6 +69,17 @@
   imageName: spin-operator
   semver:
     - ">=0.1.0"
+  howToFix: |
+    To use SpinKube, you need to install Spin Operator. This watches for SpinApp CRD resources and deploys the SpinApps on the cluster.
+    Cert Manager can be installed using following command:
+
+    # Install Spin Operator with Helm
+    helm install spin-operator \
+      --namespace spin-operator \
+      --create-namespace \
+      --version 0.1.0 \
+      --wait \
+      oci://ghcr.io/spinkube/charts/spin-operator
 
 # - name: Containerd is configured to run Spin
 #   checkType: binary-installed-on-nodes
