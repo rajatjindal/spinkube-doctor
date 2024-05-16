@@ -1,4 +1,4 @@
-package minikube
+package k8s
 
 import (
 	"context"
@@ -9,35 +9,35 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-type minikube struct {
+type k8s struct {
 	k8sclient kubernetes.Interface
 	dc        dynamic.Interface
 }
 
 func New(dc dynamic.Interface, sc kubernetes.Interface) provider.Provider {
-	return &minikube{
+	return &k8s{
 		k8sclient: sc,
 		dc:        dc,
 	}
 }
 
-func (k *minikube) Name() string {
-	return "minikube"
+func (k *k8s) Name() string {
+	return "k8s"
 }
 
-func (k *minikube) Client() kubernetes.Interface {
+func (k *k8s) Client() kubernetes.Interface {
 	return k.k8sclient
 }
 
-func (k *minikube) DynamicClient() dynamic.Interface {
+func (k *k8s) DynamicClient() dynamic.Interface {
 	return k.dc
 }
 
-func (k *minikube) Status(ctx context.Context) ([]provider.Status, error) {
+func (k *k8s) Status(ctx context.Context) ([]provider.Status, error) {
 	return checks.Status(ctx, k)
 }
 
-func (k *minikube) GetCheckOverride(ctx context.Context, check provider.Check) provider.CheckFn {
+func (k *k8s) GetCheckOverride(ctx context.Context, check provider.Check) provider.CheckFn {
 	switch check.Type {
 	case checks.CheckBinaryInstalledOnNodes:
 		return binaryVersionCheck

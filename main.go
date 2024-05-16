@@ -8,7 +8,7 @@ import (
 	"github.com/rajatjindal/spinkube/pkg/factory"
 	"github.com/rajatjindal/spinkube/pkg/provider"
 	"github.com/rajatjindal/spinkube/pkg/provider/k3d"
-	"github.com/rajatjindal/spinkube/pkg/provider/minikube"
+	"github.com/rajatjindal/spinkube/pkg/provider/k8s"
 )
 
 func main() {
@@ -65,9 +65,7 @@ func GetProvider(hint string) provider.Provider {
 	switch hint {
 	case "k3d":
 		return k3d.New(dc, sc)
-	case "minikube":
-		return minikube.New(dc, sc)
+	default:
+		return k8s.New(dc, sc)
 	}
-
-	panic(fmt.Sprint("unsupported provider -> ", hint))
 }

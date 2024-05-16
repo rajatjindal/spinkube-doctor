@@ -218,11 +218,11 @@ var ExecOnEachNodeFn = func(ctx context.Context, k provider.Provider, check prov
 			continue
 		}
 
-		fmt.Println("output", string(output))
-
 		if string(output) == "" {
 			vok = false
 		}
+
+		//TODO: compare semver
 	}
 
 	return provider.Status{
