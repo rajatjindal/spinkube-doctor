@@ -3,8 +3,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"os"
 
-	"github.com/rajatjindal/spinkube/pkg/provider/icons"
+	"github.com/rajatjindal/spinkube/pkg/icons"
 )
 
 type Status struct {
@@ -22,10 +23,10 @@ type Provider interface {
 func PrintStatus(s Status) {
 	fmt.Println()
 	if s.Ok {
-		fmt.Printf("%s %s\n", icons.IconWhiteCheckmark, s.Name)
+		fmt.Printf("%s %s", icons.IconWhiteCheckmark, s.Name)
 	} else {
 		fmt.Printf("%s %s\n%s\n", icons.IconRedCross, s.Name, s.Msg)
-		if s.HowToFix != "" {
+		if os.Getenv("SHOW_FIXES") != "false" && s.HowToFix != "" {
 			fmt.Println()
 			fmt.Println("### how to fix ###")
 			fmt.Println()

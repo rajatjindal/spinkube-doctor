@@ -24,7 +24,6 @@ func main() {
 	}
 
 	fmt.Println("Running checks for SpinApp setup:")
-	fmt.Println()
 
 	p := k3d.New(dc, sc)
 	statusList, err := p.Status(context.Background())
@@ -49,5 +48,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("All looks good")
+	fmt.Println("\nAll looks good !!")
 }

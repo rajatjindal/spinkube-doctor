@@ -1,6 +1,7 @@
 package k3d
 
 import (
+	"fmt"
 	"strings"
 
 	semver "github.com/Masterminds/semver/v3"
@@ -30,7 +31,7 @@ func compareVersions(version string, expectedSemVer []string) (bool, error) {
 		}
 	}
 
-	return false, nil
+	return false, fmt.Errorf("actual version: %q not one of the expected versions: %v", version, expectedSemVer)
 }
 
 // func getFileFromNode(_ context.Context, node v1.Node) error {

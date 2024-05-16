@@ -166,3 +166,36 @@ var containerdVersionCheck = func(ctx context.Context, k *k3d, check Check) (pro
 		HowToFix: check.HowToFix,
 	}, nil
 }
+
+var binaryVersionCheck = func(ctx context.Context, k *k3d, check Check) (provider.Status, error) {
+	resp, err := k.k8sclient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return provider.Status{}, err
+	}
+
+	vok := true
+	msgs := []string{}
+
+	for _, node := range resp.Items {
+		version := strings.ReplaceAll(node.Status.NodeInfo.ContainerRuntimeVersion, "containerd://", "")
+		ok, err := compareVersions(version, check.SemVer)
+		if err != nil {
+			vok = false
+			msgs = append(msgs, err.Error())
+			continue
+		}
+
+		if !ok {
+			vok = false
+			msgs = append(msgs, fmt.Sprintf("  - node: %s with containerd version %s does not support SpinApps", node.Name, node.Status.NodeInfo.ContainerRuntimeVersion))
+			continue
+		}
+	}
+
+	return provider.Status{
+		Name:     check.Name,
+		Ok:       vok,
+		Msg:      strings.Join(msgs, "\n"),
+		HowToFix: check.HowToFix,
+	}, nil
+}
