@@ -6,6 +6,7 @@ import (
 
 	semver "github.com/Masterminds/semver/v3"
 	dockerparser "github.com/novln/docker-parser"
+	"github.com/rajatjindal/spinkube/pkg/provider"
 	v1 "k8s.io/api/apps/v1"
 )
 
@@ -47,7 +48,7 @@ func compareVersions(version string, expectedSemVer []string) (bool, error) {
 // 	return nil
 // }
 
-func getImageTag(deployment v1.Deployment, check Check) string {
+func getImageTag(deployment v1.Deployment, check provider.Check) string {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		nameFromImgRef, tag, err := getNameFromImageReference(container.Image)
 		if err != nil {

@@ -10,6 +10,10 @@
 
     k3d cluster create wasm-cluster --image ghcr.io/spinkube/containerd-shim-spin/k3d:v0.13.1  --api-port 6551 -p '8082:80@loadbalancer' --agents 2
 
+- name: Containerd shim is installed and configured
+  checkType: binary-installed-on-nodes
+  resourceName: containerd-shim-spin-v2
+
 - name: Spin App CRD is installed
   checkType: crd
   resourceName: spinapps.core.spinoperator.dev
@@ -81,7 +85,5 @@
       --wait \
       oci://ghcr.io/spinkube/charts/spin-operator
 
-# - name: Containerd is configured to run Spin
-#   checkType: binary-installed-on-nodes
-#   resourceName: containerd-shim-spin-v2
+
 

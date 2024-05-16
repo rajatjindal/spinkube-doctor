@@ -36,3 +36,9 @@ func (k *k3d) DynamicClient() dynamic.Interface {
 func (k *k3d) Status(ctx context.Context) ([]provider.Status, error) {
 	return checks.Status(ctx, k)
 }
+
+func (k *k3d) GetCheckOverride(ctx context.Context, check provider.Check) provider.CheckFn {
+	return func(ctx context.Context, k provider.Provider, check provider.Check) (provider.Status, error) {
+		return checks.ExecOnEachNodeFn(ctx, k, check, []string{"/host/bin/containerd-shim-spin-v2", "-v"})
+	}
+}
