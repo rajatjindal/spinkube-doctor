@@ -38,7 +38,7 @@ func (k *k3d) Status(ctx context.Context) ([]provider.Status, error) {
 }
 
 func (k *k3d) GetCheckOverride(ctx context.Context, check provider.Check) provider.CheckFn {
-	switch check.Name {
+	switch check.Type {
 	case checks.CheckBinaryInstalledOnNodes:
 		return binaryVersionCheck
 	}
