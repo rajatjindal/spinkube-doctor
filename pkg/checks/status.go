@@ -18,7 +18,7 @@ func Status(ctx context.Context, p provider.Provider) ([]provider.Status, error)
 	}
 
 	for _, check := range checks {
-		checkfn, ok := checksMap[check.Type]
+		checkfn, ok := defaultChecksMap[check.Type]
 		if !ok {
 			return nil, fmt.Errorf("check type %q not supported", check.Type)
 		}

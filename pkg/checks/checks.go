@@ -15,12 +15,20 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-var checksMap = map[string]provider.CheckFn{
-	"crd":                         isCrdInstalled,
-	"containerd-version-on-nodes": containerdVersionCheck,
-	"runtimeclass":                runtimeClassCheck,
-	"deployment-running":          deploymentRunningCheck,
-	"binary-installed-on-nodes":   binaryVersionCheck,
+const (
+	CheckCRD                      = "crd"
+	CheckContainerdVersionOnNodes = "containerd-version-on-nodes"
+	CheckRuntimeClass             = "runtimeclass"
+	CheckDeploymentRunning        = "deployment-running"
+	CheckBinaryInstalledOnNodes   = "binary-installed-on-nodes"
+)
+
+var defaultChecksMap = map[string]provider.CheckFn{
+	CheckCRD:                      isCrdInstalled,
+	CheckContainerdVersionOnNodes: containerdVersionCheck,
+	CheckRuntimeClass:             runtimeClassCheck,
+	CheckDeploymentRunning:        deploymentRunningCheck,
+	CheckBinaryInstalledOnNodes:   binaryVersionCheck,
 }
 
 //go:embed data/checks.yaml
@@ -173,12 +181,14 @@ var containerdVersionCheck = func(ctx context.Context, k provider.Provider, chec
 }
 
 var binaryVersionCheck = func(ctx context.Context, k provider.Provider, check provider.Check) (provider.Status, error) {
-	knownPaths := []string{
+	knownBinPaths := []string{
 		"/bin",
+		"/usr/local/bin",
+		"/usr/bin",
 	}
 
-	for _, p := range knownPaths {
-		hostAbsBinPath := filepath.Join("/host", p, check.ResourceName)
+	for _, binPath := range knownBinPaths {
+		hostAbsBinPath := filepath.Join("/host", binPath, check.ResourceName)
 		status, err := ExecOnEachNodeFn(ctx, k, check, []string{hostAbsBinPath, "-v"})
 		if err != nil {
 			continue
@@ -200,9 +210,8 @@ var ExecOnEachNodeFn = func(ctx context.Context, k provider.Provider, check prov
 	msgs := []string{}
 
 	for _, node := range resp.Items {
-		args := append([]string{"debug", "-it", fmt.Sprintf("node/%s", node.Name), "--image", "ubuntu", "--"}, cmdAndArgs...)
+		args := append([]string{"debug", "-q", "-it", fmt.Sprintf("node/%s", node.Name), "--image", "ubuntu", "--"}, cmdAndArgs...)
 		cmd := exec.Command("kubectl", args...)
-		fmt.Println(cmd.String())
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println("error ", err)
@@ -210,6 +219,10 @@ var ExecOnEachNodeFn = func(ctx context.Context, k provider.Provider, check prov
 		}
 
 		fmt.Println("output", string(output))
+
+		if string(output) == "" {
+			vok = false
+		}
 	}
 
 	return provider.Status{

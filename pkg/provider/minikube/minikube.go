@@ -1,4 +1,4 @@
-package k3d
+package minikube
 
 import (
 	"context"
@@ -9,35 +9,35 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-type k3d struct {
+type minikube struct {
 	k8sclient kubernetes.Interface
 	dc        dynamic.Interface
 }
 
 func New(dc dynamic.Interface, sc kubernetes.Interface) provider.Provider {
-	return &k3d{
+	return &minikube{
 		k8sclient: sc,
 		dc:        dc,
 	}
 }
 
-func (k *k3d) Name() string {
-	return "k3d"
+func (k *minikube) Name() string {
+	return "minikube"
 }
 
-func (k *k3d) Client() kubernetes.Interface {
+func (k *minikube) Client() kubernetes.Interface {
 	return k.k8sclient
 }
 
-func (k *k3d) DynamicClient() dynamic.Interface {
+func (k *minikube) DynamicClient() dynamic.Interface {
 	return k.dc
 }
 
-func (k *k3d) Status(ctx context.Context) ([]provider.Status, error) {
+func (k *minikube) Status(ctx context.Context) ([]provider.Status, error) {
 	return checks.Status(ctx, k)
 }
 
-func (k *k3d) GetCheckOverride(ctx context.Context, check provider.Check) provider.CheckFn {
+func (k *minikube) GetCheckOverride(ctx context.Context, check provider.Check) provider.CheckFn {
 	switch check.Name {
 	case checks.CheckBinaryInstalledOnNodes:
 		return binaryVersionCheck
@@ -47,5 +47,5 @@ func (k *k3d) GetCheckOverride(ctx context.Context, check provider.Check) provid
 }
 
 var binaryVersionCheck = func(ctx context.Context, k provider.Provider, check provider.Check) (provider.Status, error) {
-	return checks.ExecOnEachNodeFn(ctx, k, check, []string{"/host/bin/containerd-shim-spin-v2", "-v"})
+	return checks.ExecOnEachNodeFn(ctx, k, check, []string{"/host/opt/kwasm/bin/containerd-shim-spin-v2", "-v"})
 }
