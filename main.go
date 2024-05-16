@@ -23,7 +23,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Running checks for SpinApp setup:")
+	fmt.Println()
+	fmt.Println("#-------------------------------------")
+	fmt.Println("# Running checks for SpinKube setup")
+	fmt.Println("#-------------------------------------")
+	fmt.Println()
 
 	p := k3d.New(dc, sc)
 	statusList, err := p.Status(context.Background())

@@ -1,4 +1,4 @@
-package k3d
+package checks
 
 import (
 	"context"
@@ -13,7 +13,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-//go:embed checks/checks.yaml
+var checksMap = map[string]CheckFn{
+	"crd":                         isCrdInstalled,
+	"containerd-version-on-nodes": containerdVersionCheck,
+	"runtimeclass":                runtimeClassCheck,
+	"deployment-running":          deploymentRunningCheck,
+}
+
+//go:embed data/checks.yaml
 var rawChecks []byte
 
 type Check struct {
@@ -25,10 +32,10 @@ type Check struct {
 	HowToFix     string   `yaml:"howToFix"`
 }
 
-type CheckFn func(ctx context.Context, k *k3d, check Check) (provider.Status, error)
+type CheckFn func(ctx context.Context, k provider.Provider, check Check) (provider.Status, error)
 
-var isCrdInstalled = func(ctx context.Context, k *k3d, check Check) (provider.Status, error) {
-	_, err := k.dc.Resource(schema.GroupVersionResource{
+var isCrdInstalled = func(ctx context.Context, k provider.Provider, check Check) (provider.Status, error) {
+	_, err := k.DynamicClient().Resource(schema.GroupVersionResource{
 		Group:    "apiextensions.k8s.io",
 		Version:  "v1",
 		Resource: "customresourcedefinitions",
@@ -55,8 +62,8 @@ var isCrdInstalled = func(ctx context.Context, k *k3d, check Check) (provider.St
 	}, nil
 }
 
-var runtimeClassCheck = func(ctx context.Context, k *k3d, check Check) (provider.Status, error) {
-	_, err := k.k8sclient.NodeV1().RuntimeClasses().Get(ctx, check.ResourceName, metav1.GetOptions{})
+var runtimeClassCheck = func(ctx context.Context, k provider.Provider, check Check) (provider.Status, error) {
+	_, err := k.Client().NodeV1().RuntimeClasses().Get(ctx, check.ResourceName, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return provider.Status{
@@ -77,8 +84,8 @@ var runtimeClassCheck = func(ctx context.Context, k *k3d, check Check) (provider
 	}, nil
 }
 
-var deploymentRunningCheck = func(ctx context.Context, k *k3d, check Check) (provider.Status, error) {
-	resp, err := k.k8sclient.AppsV1().Deployments(v1.NamespaceAll).List(ctx, metav1.ListOptions{})
+var deploymentRunningCheck = func(ctx context.Context, k provider.Provider, check Check) (provider.Status, error) {
+	resp, err := k.Client().AppsV1().Deployments(v1.NamespaceAll).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return provider.Status{
@@ -134,8 +141,8 @@ var deploymentRunningCheck = func(ctx context.Context, k *k3d, check Check) (pro
 	}, nil
 }
 
-var containerdVersionCheck = func(ctx context.Context, k *k3d, check Check) (provider.Status, error) {
-	resp, err := k.k8sclient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+var containerdVersionCheck = func(ctx context.Context, k provider.Provider, check Check) (provider.Status, error) {
+	resp, err := k.Client().CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return provider.Status{}, err
 	}
@@ -167,8 +174,8 @@ var containerdVersionCheck = func(ctx context.Context, k *k3d, check Check) (pro
 	}, nil
 }
 
-var binaryVersionCheck = func(ctx context.Context, k *k3d, check Check) (provider.Status, error) {
-	resp, err := k.k8sclient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+var binaryVersionCheck = func(ctx context.Context, k provider.Provider, check Check) (provider.Status, error) {
+	resp, err := k.Client().CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return provider.Status{}, err
 	}
