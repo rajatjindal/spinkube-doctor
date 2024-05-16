@@ -69,5 +69,5 @@ func GetProvider(hint string) provider.Provider {
 		return minikube.New(dc, sc)
 	}
 
-	return nil
+	panic(fmt.Sprint("unsupported provider -> ", hint))
 }
